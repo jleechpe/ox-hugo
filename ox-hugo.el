@@ -3508,6 +3508,7 @@ their Hugo site's config."
                           (when code-refs1
                             (setq line-num-p t))
                           code-refs1))
+             (filename (org-element-property :name src-block))
              (goldmarkp (org-hugo--plist-get-true-p info :hugo-goldmark))
              ;; Use the `highlight' shortcode only if ..
              (use-highlight-sc (or ;; HUGO_CODE_FENCE is nil, or ..
@@ -3591,7 +3592,10 @@ their Hugo site's config."
           (if (org-string-nw-p code-attr-str)
               (setq code-attr-str (format "%s, hl_lines=%s" code-attr-str hl-lines))
             (setq code-attr-str (format "hl_lines=%s" hl-lines))))
-
+        (when filename
+          (if (org-string-nw-p code-attr-str)
+              (setq code-attr-str (format "%s, filename=%s" code-attr-str filename))
+            (setq code-attr-str (format "filename=%s" filename))))
         (when code-refs
           (let* ((anchor-prefix (cdr code-refs-and-anchor))
                  (anchor-str (format "anchorlinenos=true, lineanchors=%s" anchor-prefix)))
