@@ -1915,75 +1915,75 @@ This function updates these properties in INFO: `:logbook-date',
       (user-error "No time stamp is recorded in the LOGBOOK drawer entry"))
 
     (cl-labels ((get-match-string-and-trim-quotes
-                 (num str)
-                 (org-string-nw-p
-                  (replace-regexp-in-string
-                   ;; Handle corner case: If a TODO state has "__" in them, the
-                   ;; underscore will be escaped. Remove that "\".
-                   "\\\\" ""
-                   (save-match-data ;Required because `string-trim' changes match data
-                     (string-trim
-                      (or (match-string-no-properties num str) "")
-                      "\"" "\"")))))
+                  (num str)
+                  (org-string-nw-p
+                   (replace-regexp-in-string
+                    ;; Handle corner case: If a TODO state has "__" in them, the
+                    ;; underscore will be escaped. Remove that "\".
+                    "\\\\" ""
+                    (save-match-data ;Required because `string-trim' changes match data
+                      (string-trim
+                       (or (match-string-no-properties num str) "")
+                       "\"" "\"")))))
 
                 ;; Parse (assq 'state org-log-note-headings)
                 (parse-state-change-maybe
-                 ()
-                 (let ((state-change-re "^State\\s-+\\(?1:\".+?\"\\)*\\s-+from\\s-+\\(?2:\".+?\"\\)*"))
-                   (when (string-match state-change-re para-raw-str)
-                     (let ((to-state (get-match-string-and-trim-quotes 1 para-raw-str))
-                           ;; (from-state (get-match-string-and-trim-quotes 2 para-raw-str)) ;For debug
-                           )
-                       ;; (message "[ox-hugo logbook DBG] state change : from %s to %s @ %s"
-                       ;;          from-state to-state timestamp)
-                       (when to-state
-                         (push `(to_state . ,to-state) logbook-entry)
-                         ;; (message "[ox-hugo logbook DBG] org-done-keywords: %S" org-done-keywords)
-                         (when (and (null parent-heading-title) ;Parse dates from only the toplevel LOGBOOK drawer.
-                                    (member to-state org-done-keywords))
-                           ;; The first parsed TODO state change entry will be the
-                           ;; latest one, and `:logbook-date' would already have
-                           ;; been set to that.  So if `:logbook-lastmod' is not set,
-                           ;; set that that to the value of `:logbook-date'.
-                           ;; *This always works because the newest state change or note
-                           ;; entry is always put to the top of the LOGBOOK.*
-                           (unless (plist-get info :logbook-lastmod)
-                             (when (plist-get info :logbook-date)
-                               (plist-put info :logbook-lastmod (plist-get info :logbook-date))))
-                           ;; `:logbook-date' will keep on getting updating until the last
-                           ;; parsed (first entered) "state changed to DONE" entry.
-                           (plist-put info :logbook-date timestamp)))
-                       ;; (when from-state ;For debug
-                       ;;   (push `(from_state . ,from-state) logbook-entry))
-                       )
-                     t)))
+                  ()
+                  (let ((state-change-re "^State\\s-+\\(?1:\".+?\"\\)*\\s-+from\\s-+\\(?2:\".+?\"\\)*"))
+                    (when (string-match state-change-re para-raw-str)
+                      (let ((to-state (get-match-string-and-trim-quotes 1 para-raw-str))
+                            ;; (from-state (get-match-string-and-trim-quotes 2 para-raw-str)) ;For debug
+                            )
+                        ;; (message "[ox-hugo logbook DBG] state change : from %s to %s @ %s"
+                        ;;          from-state to-state timestamp)
+                        (when to-state
+                          (push `(to_state . ,to-state) logbook-entry)
+                          ;; (message "[ox-hugo logbook DBG] org-done-keywords: %S" org-done-keywords)
+                          (when (and (null parent-heading-title) ;Parse dates from only the toplevel LOGBOOK drawer.
+                                     (member to-state org-done-keywords))
+                            ;; The first parsed TODO state change entry will be the
+                            ;; latest one, and `:logbook-date' would already have
+                            ;; been set to that.  So if `:logbook-lastmod' is not set,
+                            ;; set that that to the value of `:logbook-date'.
+                            ;; *This always works because the newest state change or note
+                            ;; entry is always put to the top of the LOGBOOK.*
+                            (unless (plist-get info :logbook-lastmod)
+                              (when (plist-get info :logbook-date)
+                                (plist-put info :logbook-lastmod (plist-get info :logbook-date))))
+                            ;; `:logbook-date' will keep on getting updating until the last
+                            ;; parsed (first entered) "state changed to DONE" entry.
+                            (plist-put info :logbook-date timestamp)))
+                        ;; (when from-state ;For debug
+                        ;;   (push `(from_state . ,from-state) logbook-entry))
+                        )
+                      t)))
 
                 ;; Parse (assq 'note org-log-note-headings)
                 (parse-note-maybe
-                 ()
-                 (let ((note-re "^Note taken on .*?\n\\(?1:\\(.\\|\n\\)*\\)"))
-                   (when (string-match note-re para-raw-str)
-                     (let ((logbook-notes (plist-get info :logbook))
-                           (note (string-trim
-                                  (match-string-no-properties 1 para-raw-str))))
-                       ;; (message "[ox-hugo logbook DBG] note : %s @ %s" note timestamp)
-                       (push `(note . ,note) logbook-entry)
-                       ;; Update the `lastmod' field using the
-                       ;; note's timestamp.
-                       ;; *This always works because the newest state change or note
-                       ;; entry is always put to the top of the LOGBOOK.*
-                       (unless parent-heading-title ;Parse dates from only the toplevel LOGBOOK drawer.
-                         (unless (plist-get info :logbook-lastmod)
-                           (plist-put info :logbook-lastmod timestamp)))
+                  ()
+                  (let ((note-re "^Note taken on .*?\n\\(?1:\\(.\\|\n\\)*\\)"))
+                    (when (string-match note-re para-raw-str)
+                      (let ((logbook-notes (plist-get info :logbook))
+                            (note (string-trim
+                                   (match-string-no-properties 1 para-raw-str))))
+                        ;; (message "[ox-hugo logbook DBG] note : %s @ %s" note timestamp)
+                        (push `(note . ,note) logbook-entry)
+                        ;; Update the `lastmod' field using the
+                        ;; note's timestamp.
+                        ;; *This always works because the newest state change or note
+                        ;; entry is always put to the top of the LOGBOOK.*
+                        (unless parent-heading-title ;Parse dates from only the toplevel LOGBOOK drawer.
+                          (unless (plist-get info :logbook-lastmod)
+                            (plist-put info :logbook-lastmod timestamp)))
 
-                       (let ((context-key (or parent-heading-title "_toplevel")))
-                         (unless (assoc context-key logbook-notes)
-                           (push (cons context-key (list (cons 'notes (list)))) logbook-notes))
-                         (setcdr (assoc 'notes (assoc context-key logbook-notes))
-                                 (append (cdr (assoc 'notes (assoc context-key logbook-notes)))
-                                         (list (nreverse logbook-entry)))))
-                       (plist-put info :logbook logbook-notes))
-                     t))))
+                        (let ((context-key (or parent-heading-title "_toplevel")))
+                          (unless (assoc context-key logbook-notes)
+                            (push (cons context-key (list (cons 'notes (list)))) logbook-notes))
+                          (setcdr (assoc 'notes (assoc context-key logbook-notes))
+                                  (append (cdr (assoc 'notes (assoc context-key logbook-notes)))
+                                          (list (nreverse logbook-entry)))))
+                        (plist-put info :logbook logbook-notes))
+                      t))))
 
       (save-match-data
         (cond
@@ -3508,6 +3508,7 @@ their Hugo site's config."
                           (when code-refs1
                             (setq line-num-p t))
                           code-refs1))
+             (filename (org-element-property :name src-block))
              (goldmarkp (org-hugo--plist-get-true-p info :hugo-goldmark))
              ;; Use the `highlight' shortcode only if ..
              (use-highlight-sc (or ;; HUGO_CODE_FENCE is nil, or ..
@@ -3591,7 +3592,10 @@ their Hugo site's config."
           (if (org-string-nw-p code-attr-str)
               (setq code-attr-str (format "%s, hl_lines=%s" code-attr-str hl-lines))
             (setq code-attr-str (format "hl_lines=%s" hl-lines))))
-
+        (when filename
+          (if (org-string-nw-p code-attr-str)
+              (setq code-attr-str (format "%s, filename=\"%s\"" code-attr-str filename))
+            (setq code-attr-str (format "filename=\"%s\"" filename))))
         (when code-refs
           (let* ((anchor-prefix (cdr code-refs-and-anchor))
                  (anchor-str (format "anchorlinenos=true, lineanchors=%s" anchor-prefix)))
@@ -4521,7 +4525,7 @@ subtree-number being exported.
                (is-commented (cdr (org-hugo--get-elem-with-prop :commentedp)))
                (commented-heading (when is-commented
                                     (org-element-property :title
-                                      (car (org-hugo--get-elem-with-prop :commentedp)))))
+                                                          (car (org-hugo--get-elem-with-prop :commentedp)))))
                is-excluded matched-exclude-tag ret)
           ;; (message "[org-hugo--export-subtree-to-md DBG] exclude-tags =
           ;; %s" exclude-tags)
@@ -4743,8 +4747,8 @@ links."
                   (and (not (memq var org-export-ignored-local-variables))
                        (or (memq var
                                  '(default-directory
-                                    buffer-file-name
-                                    buffer-file-coding-system))
+                                   buffer-file-name
+                                   buffer-file-coding-system))
                            (assq var bound-variables)
                            (string-match "^\\(org-\\|orgtbl-\\)"
                                          (symbol-name var)))
